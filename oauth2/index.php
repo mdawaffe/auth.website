@@ -6,7 +6,7 @@ header( 'Expires: Wed, 11 Jan 1984 05:00:00 GMT' );
 header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 header( 'Cache-Control: no-cache, must-revalidate, max-age=0' );
 header( 'Pragma: no-cache' );
-header( "Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'self'; sandbox allow-forms allow-scripts; form-action 'self'; frame-ancestors 'none';" );
+header( "Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'self'; sandbox allow-forms; form-action 'self'; frame-ancestors 'none';" );
 header( 'X-Frame-Options: DENY' );
 
 $fields = [
@@ -81,6 +81,8 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 	// since it will interpret the redirect (even a 303) as a
 	// form submission (to authorization_url), which is forbidden
 	// by our Content-Security-Policy header.
+	// Instead, send a Refresh header and output a meta-refresh
+	// element.
 	template( 'loading', $url );
 }
 
@@ -93,8 +95,8 @@ if ( isset( $_GET['code'] ) ) {
 		// The redirect from authorization_url to here
 		// means Chrome (and others?) won't send our SameSite=Strict
 		// cookies during this request (I think this is a bug).
-		// Instead, we meta-refresh to another URL on our site
-		// The cookies will be sent on that next request.
+		// Instead, Refresh/meta-refresh to another URL on our
+		// site. The cookies will be sent on that next request.
 		template( 'loading', $_SERVER['REQUEST_URI'] . '&action=retrieve' );
 	case 'retrieve' :
 		if (
