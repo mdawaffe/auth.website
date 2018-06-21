@@ -41,7 +41,7 @@ function template( $template, $redirect_or_scope ) {
 }
 
 if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
-	if ( $_POST['csrf'] !== $_COOKIE['csrf'] ) {
+	if ( ! hash_equals( $_POST['csrf'], $_COOKIE['csrf'] ) ) {
 		die( 'CSRF MISMATCH!' );
 	}
 
@@ -97,7 +97,16 @@ if ( isset( $_GET['code'] ) ) {
 		// The cookies will be sent on that next request.
 		template( 'loading', $_SERVER['REQUEST_URI'] . '&action=retrieve' );
 	case 'retrieve' :
-		if ( ! $csrf || ! $hmac_key || hmac( "$csrf|{$_COOKIE['oauth2_client_id']}|{$_COOKIE['oauth2_authorization_url']}", $hmac_key ) !== $_GET['state'] ) {
+		if (
+			! $csrf
+		||
+			! $hmac_key
+		||
+			! hash_equals(
+				hmac( "$csrf|{$_COOKIE['oauth2_client_id']}|{$_COOKIE['oauth2_authorization_url']}", $hmac_key ),
+				$_GET['state']
+			)
+		) {
 			die( 'STATE MISMATCH!' );
 		}
 
