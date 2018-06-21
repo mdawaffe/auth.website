@@ -28,69 +28,16 @@ if ( isset( $_COOKIE['csrf'] ) ) {
 }
 
 if ( isset( $_COOKIE['hmac'] ) ) {
-	$hmac = $_COOKIE['hmac'];
+	$hmac_key = $_COOKIE['hmac'];
 } elseif ( empty( $_GET ) ) {
-	$hmac = strtr( base64_encode( random_bytes( 12 ) ), '+/', '-_' );
-	set_cookie( 'hmac', $hmac );
+	$hmac_key = strtr( base64_encode( random_bytes( 12 ) ), '+/', '-_' );
+	set_cookie( 'hmac', $hmac_key );
 } else {
-	$hmac = '';
-}
-
-function hmac( $data ) {
-	global $hmac;
-
-	return hash_hmac( 'sha256', $data, $hmac );
-}
-
-function esc_html( $string ) {
-	return htmlspecialchars( $string, ENT_QUOTES );
-}
-
-function set_cookie( $name, $value ) {
-	header( sprintf( 'Set-Cookie: %s=%s; Secure; HttpOnly; SameSite=Strict', rawurlencode( $name ), rawurlencode( $value ) ), false );
-}
-
-function clear_cookie( $name ) {
-	header( sprintf( 'Set-Cookie: %s=.; Secure; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT', rawurlencode( $name ) ), false );
-}
-
-function clear_all_cookies() {
-	foreach ( $fields as $field_name => $_ ) {
-		clear_cookie( "oauth2_{$field_name}" );
-	}
-}
-
-function my_url() {
-	return sprintf( 'https://%s%s', $_SERVER['HTTP_HOST'], explode( '?', $_SERVER['REQUEST_URI'] )[0] );
+	$hmac_key = '';
 }
 
 function template( $template, $redirect_or_scope ) {
-	if ( is_string( $redirect_or_scope ) ) {
-		$redirect = '<meta http-equiv="refresh" content="0; url=' . esc_html( $redirect_or_scope ) . '" />';
-	} else {
-		$redirect = '';
-	}
-
-	if ( is_array( $redirect_or_scope ) ) {
-		extract( $redirect_or_scope );
-	}
-?>
-<!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<title>Auth.Website: OAuth2</title>
-		<?php echo $redirect; ?>
-		<link rel="icon" href="/auth.website-32.png" />
-		<link href="/style.css" rel="stylesheet" />
-	</head>
-	<body>
-		<h1>🔐Auth.Website: OAuth2</h1>
-		<?php require( __DIR__ . "/views/{$template}.php" ); ?>
-	</body>
-</html>
-<?php
-	exit;
+	template_with_dir_and_title( __DIR__ . '/views/', 'Auth.Website: OAuth2', $template, $redirect_or_scope );
 }
 
 if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
@@ -127,7 +74,7 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 		'response_type' => 'code',
 		'client_id' => $_POST['client_id'],
 		'scope' => $_POST['scope'],
-		'state' => hmac( "$csrf|{$_POST['client_id']}|{$_POST['authorization_url']}" ),
+		'state' => hmac( "$csrf|{$_POST['client_id']}|{$_POST['authorization_url']}", $hmac_key ),
 	] ), '', '&', PHP_QUERY_RFC3986 );
 
 	// We can't just redirect. Chrome (and others?) will bail
@@ -150,7 +97,7 @@ if ( isset( $_GET['code'] ) ) {
 		// The cookies will be sent on that next request.
 		template( 'loading', $_SERVER['REQUEST_URI'] . '&action=retrieve' );
 	case 'retrieve' :
-		if ( ! $csrf || ! $hmac || hmac( "$csrf|{$_COOKIE['oauth2_client_id']}|{$_COOKIE['oauth2_authorization_url']}" ) !== $_GET['state'] ) {
+		if ( ! $csrf || ! $hmac_key || hmac( "$csrf|{$_COOKIE['oauth2_client_id']}|{$_COOKIE['oauth2_authorization_url']}", $hmac_key ) !== $_GET['state'] ) {
 			die( 'STATE MISMATCH!' );
 		}
 
