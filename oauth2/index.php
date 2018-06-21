@@ -1,5 +1,7 @@
 <?php
 
+require( dirname( __DIR__ ) . '/functions.php' );
+
 header( 'Expires: Wed, 11 Jan 1984 05:00:00 GMT' );
 header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 header( 'Cache-Control: no-cache, must-revalidate, max-age=0' );
@@ -152,10 +154,23 @@ if ( isset( $_GET['code'] ) ) {
 			die( 'STATE MISMATCH!' );
 		}
 
+		$token_url = $_COOKIE['oauth2_token_url'];
+		$token_url_host = parse_url( $token_url, PHP_URL_HOST );
+
+		$token_url = wp_http_validate_url( $token_url );
+
+		if ( ! $token_url_host || ! $token_url ) {
+			die( 'INVALID TOKEN URL' );
+		}
+
 		$post = stream_context_create( [
 			'http' => [
 				'method'  => 'POST',
-				'header'  => 'Content-type: application/x-www-form-urlencoded',
+				'header'  => [
+					"Host: $token_url_host",
+					'Content-type: application/x-www-form-urlencoded',
+				],
+				'follow_location' => 0,
 				'content' => http_build_query( [
 					'client_id' => $_COOKIE['oauth2_client_id'],
 					'client_secret' => $_COOKIE['oauth2_client_secret'],
@@ -165,10 +180,13 @@ if ( isset( $_GET['code'] ) ) {
 				] ),
 				'ignore_errors' => true,
 			],
+			'ssl' => [
+				'peer_name' => $token_url_host,
+			],
 		] );
 
 		$response = file_get_contents(
-			$_COOKIE['oauth2_token_url'],
+			$token_url,
 			false,
 			$post
 		);
