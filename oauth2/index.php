@@ -41,7 +41,13 @@ function template( $template, $redirect_or_scope ) {
 }
 
 if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
-	if ( ! hash_equals( $_POST['csrf'], $_COOKIE['csrf'] ) ) {
+	if (
+		empty( $_POST['csrf'] )
+	||
+		empty( $_COOKIE['csrf'] )
+	||
+		! hash_equals( $_POST['csrf'], $_COOKIE['csrf'] )
+	) {
 		die( 'CSRF MISMATCH!' );
 	}
 
