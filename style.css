@@ -1,0 +1,72 @@
+body {
+	font-size: 2em;
+	margin: 2em;
+	font-family: sans-serif;
+	background-color: #f6f6f6;
+}
+
+h1 {
+	text-align: center;
+}
+
+.loading {
+	text-align: center;
+	margin-top: 3em;
+}
+
+input {
+	font-size: 1em;
+}
+
+form ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+
+	display: grid;
+	grid-template-columns: max-content auto auto;
+	grid-column-gap: 0.5em;
+	grid-row-gap: 0.2em;
+}
+
+form ul li {
+	display: contents;
+}
+
+form ul li label {
+	align-self: center;
+}
+
+form ul li input {
+	grid-column-start: 2;
+	grid-column-end: 4;
+	padding: 0.1em;
+}
+
+input[type="submit"] {
+	grid-column-start: 3;
+	display: inline-block;
+	background-color: #0087be;
+	color: white;
+	border: 4px #00aadc outset;
+	border-radius: 4px;
+	outline: none;
+}
+
+input[type="submit"]:active {
+	border-style: inset;
+}
+
+input::placeholder {
+	color: #bbb;
+}
+
+pre {
+	white-space: pre-wrap;
+}
+
+pre span {
+	display: inline-block;
+	padding-left: 4em;
+	text-indent: -4em;
+}
