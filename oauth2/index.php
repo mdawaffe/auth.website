@@ -63,8 +63,6 @@ function my_url() {
 }
 
 function template( $template, $redirect_or_scope ) {
-	global $script_nonce;
-
 	if ( is_string( $redirect_or_scope ) ) {
 		$redirect = '<meta http-equiv="refresh" content="0; url=' . esc_html( $redirect_or_scope ) . '" />';
 	} else {
