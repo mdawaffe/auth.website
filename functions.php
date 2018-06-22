@@ -1,5 +1,23 @@
 <?php
 
+function is_https() {
+	return
+		( defined( 'AUTH_DOT_WEBSITE_IS_HTTPS' ) && AUTH_DOT_WEBSITE_IS_HTTPS )
+	||
+		'https' === $_SERVER['REQUEST_SCHEME']
+	||
+		( ! empty( $_SERVER['HTTPS'] ) && 'off' !== $_SERVER['HTTPS'] )
+	||
+		( isset( $_SERVER['SERVER_PORT'] ) && '443' == $_SERVER['SERVER_PORT'] )
+	||
+		( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && strstr( $_SERVER['HTTP_X_FORWARDED_PROTO'], 'https' ) )
+	||
+		( isset( $_SERVER['HTTP_X_FORWARDED_PORT'] ) && '443' == $_SERVER['HTTP_X_FORWARDED_PORT'] )
+	||
+		( isset( $_SERVER['HTTP_FORWARDED'] ) && strstr( $_SERVER['HTTP_FORWARDED'], 'proto=https' ) )
+	;
+}
+
 function hmac( $data, $hmac_key ) {
 	return hash_hmac( 'sha256', $data, $hmac_key );
 }
@@ -9,15 +27,17 @@ function esc_html( $string ) {
 }
 
 function set_cookie( $name, $value ) {
-	header( sprintf( 'Set-Cookie: %s=%s; Secure; HttpOnly; SameSite=Strict', rawurlencode( $name ), rawurlencode( $value ) ), false );
+	$secure = is_https() ? ' Secure;' : '';
+	header( sprintf( "Set-Cookie: %s=%s;$secure HttpOnly; SameSite=Strict", rawurlencode( $name ), rawurlencode( $value ) ), false );
 }
 
 function clear_cookie( $name ) {
 	header( sprintf( 'Set-Cookie: %s=.; Secure; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT', rawurlencode( $name ) ), false );
+	header( sprintf( 'Set-Cookie: %s=.; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT', rawurlencode( $name ) ), false );
 }
 
 function my_url() {
-	return sprintf( 'https://%s%s', $_SERVER['HTTP_HOST'], explode( '?', $_SERVER['REQUEST_URI'] )[0] );
+	return sprintf( '%s://%s%s', is_https() ? 'https' : 'http', $_SERVER['HTTP_HOST'], explode( '?', $_SERVER['REQUEST_URI'] )[0] );
 }
 
 function template_with_dir_and_title( $view_dir, $title, $template, $redirect_or_scope ) {
