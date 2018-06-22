@@ -20,7 +20,7 @@ function my_url() {
 	return sprintf( 'https://%s%s', $_SERVER['HTTP_HOST'], explode( '?', $_SERVER['REQUEST_URI'] )[0] );
 }
 
-function template_with_dir_and_title( $dir, $title, $template, $redirect_or_scope ) {
+function template_with_dir_and_title( $view_dir, $title, $template, $redirect_or_scope ) {
 	if ( is_string( $redirect_or_scope ) ) {
 		$redirect = '<meta http-equiv="refresh" content="0; url=' . esc_html( $redirect_or_scope ) . '" />';
 		header( "Refresh: 0; url=$redirect_or_scope" );
@@ -43,7 +43,7 @@ function template_with_dir_and_title( $dir, $title, $template, $redirect_or_scop
 	</head>
 	<body>
 		<h1>🔐<?php echo esc_html( $title ); ?></h1>
-		<?php require( $dir . "{$template}.php" ); ?>
+		<?php require( $view_dir . "{$template}.php" ); ?>
 	</body>
 </html>
 <?php
