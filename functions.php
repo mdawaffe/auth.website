@@ -68,7 +68,7 @@ function ends_with( $haystack, $needle ) {
 }
 
 
-function template_with_dir_and_title( $view_dir, $title, $template, $redirect_or_scope = [] ) {
+function template_with_title( $title, $template, $redirect_or_scope = [] ) {
 	if ( is_string( $redirect_or_scope ) ) {
 		$redirect = '<meta http-equiv="refresh" content="0; url=' . esc_html( $redirect_or_scope ) . '" />';
 		header( "Refresh: 0; url=$redirect_or_scope" );
@@ -96,7 +96,7 @@ function template_with_dir_and_title( $view_dir, $title, $template, $redirect_or
 		</header>
 		<main><?php
 			if ( is_string( $template ) ) {
-				require( $view_dir . "/{$template}.php" );
+				require( $template );
 			} else if ( is_callable( $template ) ) {
 				call_user_func( $template );
 			}

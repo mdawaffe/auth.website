@@ -5,7 +5,7 @@ header( 'X-Frame-Options: DENY' );
 
 require __DIR__ . '/functions.php';
 
-template_with_dir_and_title( __DIR__, 'Auth.Website', function() {
+template_with_title( 'Auth.Website', function() {
 ?>
 	<ul>
 		<li><a href="./oauth2/">OAuth2</a></li>
