@@ -35,3 +35,11 @@ Security
 No - this is not secure :) You shouldn't trust anyone with your
 app/client's credentials. That means you shouldn't trust Auth.Website with
 them! Why are you even here?
+
+Thanks
+------
+
+* [WordPress](https://wordpress.org/) for the inspiration behind some SSRF
+  prevention code.
+* [Twitter](https://twitter.com/) for [Twemoji](https://twemoji.twitter.com/),
+  which is the source of Auth.Website's favicon.

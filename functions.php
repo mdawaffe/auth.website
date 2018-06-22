@@ -87,7 +87,7 @@ function template_with_dir_and_title( $view_dir, $title, $template, $redirect_or
 		<title><?php echo esc_html( $title ); ?></title>
 		<?php echo $redirect; ?>
 		<base href="<?php echo esc_html( base_url() ); ?>" />
-		<link rel="icon" href="auth.website-32.png" />
+		<link rel="icon" href="auth.website-32.png" /><!-- Twitter's Twemoji: https://twemoji.twitter.com/ -->
 		<link href="style.css" rel="stylesheet" />
 	</head>
 	<body>
