@@ -47,7 +47,7 @@ function base_url() {
 
 	$url_path = $_SERVER['SCRIPT_NAME'];
 
-	while ( $url_path && ! ends_with( __DIR__, $url_path ) ) {
+	while ( $url_path && '/' !== $url_path && ! ends_with( __DIR__, $url_path ) ) {
 		$url_path = dirname( $url_path );
 	}
 
