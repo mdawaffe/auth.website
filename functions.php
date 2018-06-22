@@ -91,8 +91,15 @@ function template_with_dir_and_title( $view_dir, $title, $template, $redirect_or
 		<link href="style.css" rel="stylesheet" />
 	</head>
 	<body>
-		<h1>🔐<?php echo esc_html( $title ); ?></h1>
-		<?php require( $view_dir . "{$template}.php" ); ?>
+		<header>
+			<h1>🔐<?php echo esc_html( $title ); ?></h1>
+		</header>
+		<main>
+			<?php require( $view_dir . "{$template}.php" ); ?>
+		</main>
+		<footer>
+			<a href="https://github.com/mdawaffe/auth.website/" rel="noopener noreferrer">GitHub</a>
+		</footer>
 	</body>
 </html>
 <?php
