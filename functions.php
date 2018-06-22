@@ -40,6 +40,34 @@ function my_url() {
 	return sprintf( '%s://%s%s', is_https() ? 'https' : 'http', $_SERVER['HTTP_HOST'], explode( '?', $_SERVER['REQUEST_URI'] )[0] );
 }
 
+function base_url() {
+	if ( defined( 'AUTH_DOT_WEBSITE_BASE_URL' ) ) {
+		return rtrim( AUTH_DOT_WEBSITE_BASE_URL, '/' ) . '/';
+	}
+
+	$url_path = $_SERVER['SCRIPT_NAME'];
+
+	while ( $url_path && ! ends_with( __DIR__, $url_path ) ) {
+		$url_path = dirname( $url_path );
+	}
+
+	if ( ! $url_path ) {
+		return '/'; // Just return something and hope it works
+	}
+
+	return rtrim( $url_path, '/' ) . '/';
+}
+
+function ends_with( $haystack, $needle ) {
+	$pos = strpos( $haystack, $needle );
+	if ( false === $pos ) {
+		return false;
+	}
+
+	return $pos + strlen( $needle ) === strlen( $haystack );
+}
+
+
 function template_with_dir_and_title( $view_dir, $title, $template, $redirect_or_scope ) {
 	if ( is_string( $redirect_or_scope ) ) {
 		$redirect = '<meta http-equiv="refresh" content="0; url=' . esc_html( $redirect_or_scope ) . '" />';
@@ -58,8 +86,9 @@ function template_with_dir_and_title( $view_dir, $title, $template, $redirect_or
 		<meta charset="utf-8" />
 		<title><?php echo esc_html( $title ); ?></title>
 		<?php echo $redirect; ?>
-		<link rel="icon" href="/auth.website-32.png" />
-		<link href="/style.css" rel="stylesheet" />
+		<base href="<?php echo esc_html( base_url() ); ?>" />
+		<link rel="icon" href="auth.website-32.png" />
+		<link href="style.css" rel="stylesheet" />
 	</head>
 	<body>
 		<h1>🔐<?php echo esc_html( $title ); ?></h1>

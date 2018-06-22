@@ -10,4 +10,4 @@ $formatted = '<span>' . join( "</span>\n<span>", array_map( 'esc_html', explode(
 ?>
 <pre><?php echo $formatted; ?></pre>
 
-<p><a href="./">Go Back</a></p>
+<p><a href="oauth2/">Go Back</a></p>
