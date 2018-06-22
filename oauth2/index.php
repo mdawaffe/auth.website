@@ -37,7 +37,7 @@ if ( isset( $_COOKIE['hmac'] ) ) {
 }
 
 function template( $template, $redirect_or_scope ) {
-	template_with_dir_and_title( __DIR__ . '/views/', 'Auth.Website: OAuth2', $template, $redirect_or_scope );
+	template_with_dir_and_title( __DIR__ . '/views', 'Auth.Website: OAuth2', $template, $redirect_or_scope );
 }
 
 if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
