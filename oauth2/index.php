@@ -36,8 +36,13 @@ if ( isset( $_COOKIE['hmac'] ) ) {
 	$hmac_key = '';
 }
 
-function template( string $template, array $scope = [], string $redirect = '' ) {
-	template_with_title( 'Auth.Website: OAuth2', __DIR__ . "/views/{$template}.php", $scope, $redirect );
+function template( string $template = '', array $scope = [], string $redirect = '' ) {
+	template_with_title(
+		'Auth.Website: OAuth2',
+		$template ? __DIR__ . "/views/{$template}.php" : '',
+		$scope,
+		$redirect
+	);
 }
 
 if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {

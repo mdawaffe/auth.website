@@ -77,7 +77,9 @@ function template_with_title( string $title, $template, array $scope = [], strin
 		register_shutdown_function( 'template_footer' );
 	}
 
-	do_template( $template, $scope );
+	if ( $template ) {
+		do_template( $template, $scope );
+	}
 }
 
 function template_header( string $title, string $redirect = '' ) {
