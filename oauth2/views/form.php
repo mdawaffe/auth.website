@@ -1,4 +1,14 @@
-<form action="" method="post">
+<?php
+
+printf(
+	'<input id="radio-%1$s" type="radio" %3$s name="grant_type" /><label for="radio-%1$s">%2$s</label>',
+	esc_html( $grant_type ),
+	esc_html( $grant_type_label ),
+	$grant_type === ( $_COOKIE['oauth2_grant_type'] ?? false ) ? 'checked="checked"' : ''
+);
+
+?>
+<form id="<?php echo esc_html( $grant_type ); ?>" action="" method="post">
 	<ul>
 <?php
 	foreach ( $fields as $field_name => $field_label ) :
@@ -18,9 +28,8 @@
 ?>
 		<li>
 			<input type="hidden" name="csrf" value="<?php echo esc_html( $csrf ); ?>" />
+			<input type="hidden" name="grant_type" value="<?php echo esc_html( $grant_type ); ?>" />
 			<input type="submit" />
 		</li>
 	</ul>
 </form>
-
-<p><small>Only supports <codE>grant_type=authorization_code</code>.</small></p>

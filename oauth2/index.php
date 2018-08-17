@@ -9,13 +9,27 @@ header( 'Pragma: no-cache' );
 header( "Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'self'; sandbox allow-forms; form-action 'self'; frame-ancestors 'none';" );
 header( 'X-Frame-Options: DENY' );
 
-$fields = [
-	'authorization_url' => 'Authorization URL',
-	'token_url'         => 'Token URL',
-	'client_id'         => 'Client ID',
-	'client_secret'     => 'Client Secret',
-	'scope'             => 'Scope',
-	'extra'             => 'Extra',
+$grant_types = [
+	'authorization_code' => 'Authorization Code',
+	'password' => 'Password',
+	'implicit' => 'Implicit',
+];
+
+$grant_type_fields = [
+	'authorization_code' => [
+		'authorization_url' => 'Authorization URL',
+		'token_url'         => 'Token URL',
+		'client_id'         => 'Client ID',
+		'client_secret'     => 'Client Secret',
+		'scope'             => 'Scope',
+		'extra'             => 'Extra',
+	],
+	'implicit' => [
+		'authorization_url' => 'Authorization URL',
+		'client_id'         => 'Client ID',
+		'scope'             => 'Scope',
+		'extra'             => 'Extra',
+	],
 ];
 
 if ( isset( $_COOKIE['csrf'] ) ) {
@@ -45,6 +59,8 @@ function template( string $template = '', array $scope = [], string $redirect = 
 	);
 }
 
+$redirect_uri = my_url() . '?action=receive';
+
 if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 	if (
 		empty( $_POST['csrf'] )
@@ -63,7 +79,13 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 	$extra = array_map( function( $string ) { return (string) $string; }, $extra );
 	$_POST['extra'] = http_build_query( $extra, '', '&', PHP_QUERY_RFC3986 );
 
-	foreach ( $fields as $field_name => $_ ) {
+	$grant_type = $_POST['grant_type'];
+	if ( ! array_key_exists( $grant_type, $grant_types ) ) {
+		die( "NO" );
+	}
+	set_cookie( 'oauth2_grant_type', $grant_type );
+
+	foreach ( $grant_type_fields[$grant_type] as $field_name => $_ ) {
 		if ( false !== strpos( $field_name, 'url' ) ) {
 			if ( 0 !== strpos( $_POST[$field_name], 'https://' ) ) {
 				die( "URLs must begin with 'https://'" );
@@ -72,7 +94,36 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 		set_cookie( "oauth2_{$field_name}", $_POST[$field_name] );
 	}
 
-	$url = $_POST['authorization_url'];
+	$state = hmac( "$csrf|{$_POST['client_id']}|{$_POST['authorization_url']}", $hmac_key );
+
+	switch ( $grant_type ) {
+	case 'authorization_code' :
+		$url = $_POST['authorization_url'];
+
+		$parameters = [
+			'redirect_uri' => $redirect_uri,
+			'response_type' => 'code',
+			'client_id' => $_POST['client_id'],
+			'scope' => $_POST['scope'],
+			'state' => $state,
+		];
+		break;
+
+	case 'implicit' :
+		$url = $_POST['authorization_url'];
+
+		$parameters = [
+			'redirect_uri' => $redirect_uri,
+			'response_type' => 'token',
+			'client_id' => $_POST['client_id'],
+			'scope' => $_POST['scope'],
+			'state' => $state,
+		];
+		break;
+
+	default :
+		die( 'NO' );
+	}
 
 	if ( false === strpos( $url, '?' ) ) {
 		$url .= '?';
@@ -80,13 +131,7 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 		$url .= '&';
 	}
 
-	$url .= http_build_query( array_merge( $extra, [
-		'redirect_uri' => my_url(),
-		'response_type' => 'code',
-		'client_id' => $_POST['client_id'],
-		'scope' => $_POST['scope'],
-		'state' => hmac( "$csrf|{$_POST['client_id']}|{$_POST['authorization_url']}", $hmac_key ),
-	] ), '', '&', PHP_QUERY_RFC3986 );
+	$url .= http_build_query( array_merge( $extra, $parameters ), '', '&', PHP_QUERY_RFC3986 );
 
 	// We can't just redirect. Chrome (and others?) will bail
 	// since it will interpret the redirect (even a 303) as a
@@ -169,5 +214,13 @@ if ( isset( $_GET['code'] ) ) {
 	}
 }
 
-template( 'form', compact( 'fields', 'csrf' ) );
+template(); // output the header
+
+echo "<div id='grant-type-forms'><span>Grant Type:</span>\n";
+foreach ( $grant_type_fields as $grant_type => $fields ) {
+	$grant_type_label = $grant_types[$grant_type];
+	template( 'form', compact( 'fields', 'grant_type', 'grant_type_label', 'csrf' ) );
+}
+echo "</div>\n";
+
 template( 'warning' );
