@@ -340,5 +340,5 @@ if ( isset( $_GET['action'] ) ) {
 	}
 }
 
-template( 'forms', compact( 'grant_type_fields', 'grant_types', 'redirect_uri', 'csrf' ) );
+template( 'forms', compact( 'grant_type_fields', 'grant_types', 'redirect_uri', 'script_nonce', 'csrf' ) );
 template( 'warning' );
