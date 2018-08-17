@@ -36,8 +36,12 @@ if ( isset( $_COOKIE['hmac'] ) ) {
 	$hmac_key = '';
 }
 
-function template( $template, $redirect_or_scope = [] ) {
-	template_with_title( 'Auth.Website: OAuth2', __DIR__ . "/views/{$template}.php", $redirect_or_scope );
+function template( $templates, $redirect_or_scope = [] ) {
+	if ( is_array( $templates ) ) {
+		$templates = array_map( function( $template ) { return __DIR__ . "/views/{$template}.php"; }, $templates );
+	}
+
+	template_with_title( 'Auth.Website: OAuth2', $templates, $redirect_or_scope );
 }
 
 if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
@@ -161,4 +165,4 @@ if ( isset( $_GET['code'] ) ) {
 	}
 }
 
-template( 'form', compact( 'fields', 'csrf' ) );
+template( [ 'form', 'warning' ], compact( 'fields', 'csrf' ) );
