@@ -8,6 +8,7 @@ $grant_types = [
 	'authorization_code' => 'Authorization Code',
 	'password' => 'Password',
 	'implicit' => 'Implicit',
+	'client_credentials' => 'Client Credentials',
 ];
 
 $grant_type_fields = [
@@ -33,6 +34,13 @@ $grant_type_fields = [
 		'authorization_url' => 'Authorization URL',
 		'redirect_uri'      => 'Client Redirect URI',
 		'client_id'         => 'Client ID',
+		'scope'             => 'Scope',
+		'extra'             => 'Extra',
+	],
+	'client_credentials' => [
+		'token_url'         => 'Token URL',
+		'client_id'         => 'Client ID',
+		'client_secret'     => 'Client Secret',
 		'scope'             => 'Scope',
 		'extra'             => 'Extra',
 	],
@@ -187,6 +195,29 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 			'scope' => $_POST['scope'],
 			'state' => $state,
 		];
+		break;
+
+	case 'client_credentials' :
+		$token_url = $_POST['token_url'];
+
+		$parameters = [
+			'grant_type' => 'client_credentials',
+			'client_id' => $_POST['client_id'],
+			'client_secret' => $_POST['client_secret'],
+			'scope' => $_POST['scope'],
+		];
+
+		$basic = base64_encode( rawurlencode( $_POST['client_id'] ) . ':' . rawurlencode( $_POST['client_secret'] ) );
+
+		$response = post_to_url(
+			$token_url,
+			array_merge( $extra, $parameters ),
+			[ "Authorization: Basic $basic" ]
+		);
+
+		template( 'response', compact( 'response' ) );
+		exit;
+
 		break;
 
 	default :
