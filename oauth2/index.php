@@ -267,7 +267,7 @@ if ( isset( $_GET['action'] ) ) {
 			]
 		);
 
-		template( 'response', compact( 'response' ) );
+		template( 'response', compact( 'response', 'script_nonce' ) );
 		exit;
 	default :
 		die( 'Huh?' );
