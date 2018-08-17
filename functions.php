@@ -1,5 +1,15 @@
 <?php
 
+function headers() {
+	header( 'Expires: Wed, 11 Jan 1984 05:00:00 GMT' );
+	header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
+	header( 'Cache-Control: no-cache, must-revalidate, max-age=0' );
+	header( 'Pragma: no-cache' );
+	header( "Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'self'; sandbox allow-forms; form-action 'self'; frame-ancestors 'none';" );
+	header( 'X-Robots-Tag: noindex, nofollow' );
+	header( 'X-Frame-Options: DENY' );
+}
+
 function is_https() {
 	return
 		( defined( 'AUTH_DOT_WEBSITE_IS_HTTPS' ) && AUTH_DOT_WEBSITE_IS_HTTPS )
@@ -96,6 +106,7 @@ function template_header( string $title, string $redirect = '' ) {
 		<meta charset="utf-8" />
 		<title><?php echo esc_html( $title ); ?></title>
 		<?php echo $redirect; ?>
+		<meta name="robots" content="noindex, nofollow" />
 		<base href="<?php echo esc_html( base_url() ); ?>" />
 		<link rel="icon" href="auth.website-32.png" /><!-- Twitter's Twemoji: https://twemoji.twitter.com/ -->
 		<link href="style.css" rel="stylesheet" />
