@@ -68,10 +68,22 @@ function ends_with( $haystack, $needle ) {
 }
 
 
-function template_with_title( $title, $directory, array $templates, string $redirect = '' ) {
+function template_with_title( string $title, $template, array $scope = [], string $redirect = '' ) {
+	static $did_header = false;
+
+	if ( ! $did_header ) {
+		$did_header = true;
+		template_header( $title, $redirect );
+		register_shutdown_function( 'template_footer' );
+	}
+
+	do_template( $template, $scope );
+}
+
+function template_header( string $title, string $redirect = '' ) {
 	if ( $redirect ) {
-		$redirect = '<meta http-equiv="refresh" content="0; url=' . esc_html( $redirect ) . '" />';
 		header( "Refresh: 0; url=$redirect" );
+		$redirect = '<meta http-equiv="refresh" content="0; url=' . esc_html( $redirect ) . '" />';
 	} else {
 		$redirect = '';
 	}
@@ -90,28 +102,27 @@ function template_with_title( $title, $directory, array $templates, string $redi
 		<header>
 			<h1>🔐<?php echo esc_html( $title ); ?></h1>
 		</header>
-		<main><?php do_templates( $directory, $templates ); ?></main>
+		<main>
+<?php
+}
+
+function template_footer() {
+?>
+</main>
 		<footer>
 			<a href="https://github.com/mdawaffe/auth.website/" rel="noopener noreferrer">GitHub</a>
 		</footer>
 	</body>
 </html>
 <?php
-	exit;
 }
 
-function do_templates( string $directory, array $templates ) {
-	foreach ( $templates as $template => $scope ) {
-		if ( is_callable( $scope ) ) {
-			call_user_func( $scope );
-		} else {
-			extract( $scope, EXTR_SKIP );
-			require( "{$directory}/{$template}.php" );
-			foreach ( array_keys( $scope ) as $var ) {
-				unset( $$var );
-			}
-			unset( $var );
-		}
+function do_template( $template, array $scope = [] ) {
+	if ( is_callable( $template ) ) {
+		return call_user_func( $template, $scope );
+	} else {
+		extract( $scope, EXTR_SKIP );
+		require( $template );
 	}
 }
 

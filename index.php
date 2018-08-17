@@ -5,10 +5,10 @@ header( 'X-Frame-Options: DENY' );
 
 require __DIR__ . '/functions.php';
 
-template_with_title( 'Auth.Website', __DIR__, [ function() {
+template_with_title( 'Auth.Website', function() {
 ?>
 	<ul>
 		<li><a href="./oauth2/">OAuth2</a></li>
 	</ul>
 <?php
-} ] );
+} );
