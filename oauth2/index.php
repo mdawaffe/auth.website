@@ -14,6 +14,7 @@ $grant_type_fields = [
 	'authorization_code' => [
 		'authorization_url' => 'Authorization URL',
 		'token_url'         => 'Token URL',
+		'redirect_uri'      => 'Client Redirect URI',
 		'client_id'         => 'Client ID',
 		'client_secret'     => 'Client Secret',
 		'scope'             => 'Scope',
@@ -30,6 +31,7 @@ $grant_type_fields = [
 	],
 	'implicit' => [
 		'authorization_url' => 'Authorization URL',
+		'redirect_uri'      => 'Client Redirect URI',
 		'client_id'         => 'Client ID',
 		'scope'             => 'Scope',
 		'extra'             => 'Extra',
@@ -129,7 +131,9 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 				die( "URLs must begin with 'https://'" );
 			}
 		}
-		set_cookie( "oauth2_{$field_name}", $_POST[$field_name] );
+		if ( isset( $_POST[$field_name] ) ) {
+			set_cookie( "oauth2_{$field_name}", $_POST[$field_name] );
+		}
 	}
 
 	$state = hmac( "$csrf|{$_POST['client_id']}|{$_POST['authorization_url']}", $hmac_key );
@@ -275,7 +279,7 @@ template(); // output the header
 echo "<div id='grant-type-forms'><span>Grant Type:</span>\n";
 foreach ( $grant_type_fields as $grant_type => $fields ) {
 	$grant_type_label = $grant_types[$grant_type];
-	template( 'form', compact( 'fields', 'grant_type', 'grant_type_label', 'csrf' ) );
+	template( 'form', compact( 'fields', 'grant_type', 'grant_type_label', 'redirect_uri', 'csrf' ) );
 }
 echo "</div>\n";
 
