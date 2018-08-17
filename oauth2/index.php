@@ -319,6 +319,8 @@ if ( isset( $_GET['action'] ) ) {
 
 		$token_url = $_COOKIE['oauth2_token_url'];
 
+		$basic = base64_encode( rawurlencode( $_POST['client_id'] ) . ':' . rawurlencode( $_POST['client_secret'] ) );
+
 		$response = post_to_url(
 			$token_url,
 			[
@@ -327,7 +329,8 @@ if ( isset( $_GET['action'] ) ) {
 				'grant_type' => 'authorization_code',
 				'code' => $_GET['code'],
 				'redirect_uri' => $redirect_uri,
-			]
+			],
+			[ "Authorization: Basic $basic" ]
 		);
 
 		template( 'response', compact( 'response', 'script_nonce' ) );
