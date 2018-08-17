@@ -274,13 +274,5 @@ if ( isset( $_GET['action'] ) ) {
 	}
 }
 
-template(); // output the header
-
-echo "<div id='grant-type-forms'><span>Grant Type:</span>\n";
-foreach ( $grant_type_fields as $grant_type => $fields ) {
-	$grant_type_label = $grant_types[$grant_type];
-	template( 'form', compact( 'fields', 'grant_type', 'grant_type_label', 'redirect_uri', 'csrf' ) );
-}
-echo "</div>\n";
-
+template( 'forms', compact( 'grant_type_fields', 'grant_types', 'redirect_uri', 'csrf' ) );
 template( 'warning' );
