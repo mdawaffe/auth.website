@@ -24,6 +24,15 @@ $grant_type_fields = [
 		'scope'             => 'Scope',
 		'extra'             => 'Extra',
 	],
+	'password' => [
+		'token_url'         => 'Token URL',
+		'client_id'         => 'Client ID',
+		'client_secret'     => 'Client Secret',
+		'username'          => 'Username',
+		'password'          => 'Password',
+		'scope'             => 'Scope',
+		'extra'             => 'Extra',
+	],
 	'implicit' => [
 		'authorization_url' => 'Authorization URL',
 		'client_id'         => 'Client ID',
@@ -58,6 +67,40 @@ function template( string $template = '', array $scope = [], string $redirect = 
 		$redirect
 	);
 }
+
+function post_to_url( string $url, array $body = [], array $headers = [] ) {
+	$url_host = parse_url( $url, PHP_URL_HOST );
+
+	$url = wp_http_validate_url( $url );
+
+	if ( ! $url_host || ! $url ) {
+		die( 'INVALID TOKEN URL' );
+	}
+
+	$post = stream_context_create( [
+		'http' => [
+			'method'  => 'POST',
+			'header'  =>
+				array_merge( [
+					"Host: $url_host",
+					'Content-type: application/x-www-form-urlencoded',
+				], $headers ),
+			'follow_location' => 0,
+			'content' => http_build_query( $body ),
+			'ignore_errors' => true,
+		],
+		'ssl' => [
+			'peer_name' => $url_host,
+		],
+	] );
+
+	return file_get_contents(
+		$url,
+		false,
+		$post
+	);
+}
+
 
 $redirect_uri = my_url() . '?action=receive';
 
@@ -107,6 +150,32 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 			'scope' => $_POST['scope'],
 			'state' => $state,
 		];
+		break;
+
+	case 'password' :
+		$token_url = $_POST['token_url'];
+
+		$parameters = [
+			'grant_type' => 'password',
+			'client_id' => $_POST['client_id'],
+			'client_secret' => $_POST['client_secret'],
+			'username' => $_POST['username'],
+			'password' => $_POST['password'],
+			'scope' => $_POST['scope'],
+			'state' => $state,
+		];
+
+		$basic = base64_encode( rawurlencode( $_POST['client_id'] ) . ':' . rawurlencode( $_POST['client_secret'] ) );
+
+		$response = post_to_url(
+			$token_url,
+			array_merge( $extra, $parameters ),
+			[ "Authorization: Basic $basic" ]
+		);
+
+		template( 'response', compact( 'response' ) );
+		exit;
+
 		break;
 
 	case 'implicit' :
@@ -177,40 +246,16 @@ if ( isset( $_GET['code'] ) ) {
 		}
 
 		$token_url = $_COOKIE['oauth2_token_url'];
-		$token_url_host = parse_url( $token_url, PHP_URL_HOST );
 
-		$token_url = wp_http_validate_url( $token_url );
-
-		if ( ! $token_url_host || ! $token_url ) {
-			die( 'INVALID TOKEN URL' );
-		}
-
-		$post = stream_context_create( [
-			'http' => [
-				'method'  => 'POST',
-				'header'  => [
-					"Host: $token_url_host",
-					'Content-type: application/x-www-form-urlencoded',
-				],
-				'follow_location' => 0,
-				'content' => http_build_query( [
-					'client_id' => $_COOKIE['oauth2_client_id'],
-					'client_secret' => $_COOKIE['oauth2_client_secret'],
-					'grant_type' => 'authorization_code',
-					'code' => $_GET['code'],
-					'redirect_uri' => my_url(),
-				] ),
-				'ignore_errors' => true,
-			],
-			'ssl' => [
-				'peer_name' => $token_url_host,
-			],
-		] );
-
-		$response = file_get_contents(
+		$response = post_to_url(
 			$token_url,
-			false,
-			$post
+			[
+				'client_id' => $_COOKIE['oauth2_client_id'],
+				'client_secret' => $_COOKIE['oauth2_client_secret'],
+				'grant_type' => 'authorization_code',
+				'code' => $_GET['code'],
+				'redirect_uri' => $redirect_uri,
+			]
 		);
 
 		template( 'response', compact( 'response' ) );
