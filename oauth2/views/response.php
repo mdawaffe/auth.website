@@ -38,4 +38,5 @@ if ( ! isset( $script_nonce ) ) {
 	}, contents );
 
 	document.getElementById( 'response' ).appendChild( contents );
+	document.location.hash = '';
 </script>
