@@ -154,7 +154,13 @@ if ( isset( $_GET['code'] ) ) {
 		// cookies during this request (I think this is a bug).
 		// Instead, Refresh/meta-refresh to another URL on our
 		// site. The cookies will be sent on that next request.
-		template( 'loading', [], $_SERVER['REQUEST_URI'] . '&action=retrieve' );
+
+		$retrieve_url = str_replace( '?action=receive', '?action=retrieve', $_SERVER['REQUEST_URI'] );
+		if ( false === strpos( $retrieve_url, 'action=retrieve' ) ) {
+			$retrieve_url .= '&action=retrieve';
+		}
+
+		template( 'loading', [], $retrieve_url );
 		exit;
 	case 'retrieve' :
 		if (
