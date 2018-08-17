@@ -36,7 +36,7 @@ if ( isset( $_COOKIE['hmac'] ) ) {
 	$hmac_key = '';
 }
 
-function template( $template, $redirect_or_scope ) {
+function template( $template, $redirect_or_scope = [] ) {
 	template_with_title( 'Auth.Website: OAuth2', __DIR__ . "/views/{$template}.php", $redirect_or_scope );
 }
 
