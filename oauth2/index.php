@@ -136,7 +136,7 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 		}
 	}
 
-	$state = hmac( "$csrf|{$_POST['client_id']}|{$_POST['authorization_url']}", $hmac_key );
+	$state = hmac( "$csrf|{$_POST['client_id']}", $hmac_key );
 
 	switch ( $grant_type ) {
 	case 'authorization_code' :
@@ -247,7 +247,7 @@ if ( isset( $_GET['action'] ) ) {
 			! $hmac_key
 		||
 			! hash_equals(
-				hmac( "$csrf|{$_COOKIE['oauth2_client_id']}|{$_COOKIE['oauth2_authorization_url']}", $hmac_key ),
+				hmac( "$csrf|{$_COOKIE['oauth2_client_id']}", $hmac_key ),
 				$_GET['state']
 			)
 		) {
