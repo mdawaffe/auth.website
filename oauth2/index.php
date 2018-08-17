@@ -9,6 +9,7 @@ $grant_types = [
 	'password' => 'Password',
 	'implicit' => 'Implicit',
 	'client_credentials' => 'Client Credentials',
+	'refresh_token' => 'Refresh Token',
 ];
 
 $grant_type_fields = [
@@ -43,6 +44,13 @@ $grant_type_fields = [
 		'client_secret'     => 'Client Secret',
 		'scope'             => 'Scope',
 		'extra'             => 'Extra',
+	],
+	'refresh_token' => [
+		'token_url'         => 'Token URL',
+		'client_id'         => 'Client ID',
+		'client_secret'     => 'Client Secret',
+		'refresh_token'     => 'Refresh Token',
+		'scope'             => 'Scope',
 	],
 ];
 
@@ -204,6 +212,30 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 			'grant_type' => 'client_credentials',
 			'client_id' => $_POST['client_id'],
 			'client_secret' => $_POST['client_secret'],
+			'scope' => $_POST['scope'],
+		];
+
+		$basic = base64_encode( rawurlencode( $_POST['client_id'] ) . ':' . rawurlencode( $_POST['client_secret'] ) );
+
+		$response = post_to_url(
+			$token_url,
+			array_merge( $extra, $parameters ),
+			[ "Authorization: Basic $basic" ]
+		);
+
+		template( 'response', compact( 'response' ) );
+		exit;
+
+		break;
+
+	case 'refresh_token' :
+		$token_url = $_POST['token_url'];
+
+		$parameters = [
+			'grant_type' => 'refresh_token',
+			'client_id' => $_POST['client_id'],
+			'client_secret' => $_POST['client_secret'],
+			'refresh_token' => $_POST['refresh_token'],
 			'scope' => $_POST['scope'],
 		];
 
