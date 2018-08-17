@@ -36,12 +36,8 @@ if ( isset( $_COOKIE['hmac'] ) ) {
 	$hmac_key = '';
 }
 
-function template( $templates, $redirect_or_scope = [] ) {
-	if ( is_array( $templates ) ) {
-		$templates = array_map( function( $template ) { return __DIR__ . "/views/{$template}.php"; }, $templates );
-	}
-
-	template_with_title( 'Auth.Website: OAuth2', $templates, $redirect_or_scope );
+function template( array $templates, string $redirect = '' ) {
+	template_with_title( 'Auth.Website: OAuth2', __DIR__ . '/views', $templates, $redirect );
 }
 
 if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
@@ -93,7 +89,7 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 	// by our Content-Security-Policy header.
 	// Instead, send a Refresh header and output a meta-refresh
 	// element.
-	template( 'loading', $url );
+	template( [ 'loading' => null ], $url );
 }
 
 if ( isset( $_GET['code'] ) ) {
@@ -107,7 +103,7 @@ if ( isset( $_GET['code'] ) ) {
 		// cookies during this request (I think this is a bug).
 		// Instead, Refresh/meta-refresh to another URL on our
 		// site. The cookies will be sent on that next request.
-		template( 'loading', $_SERVER['REQUEST_URI'] . '&action=retrieve' );
+		template( [ 'loading' => null ], $_SERVER['REQUEST_URI'] . '&action=retrieve' );
 	case 'retrieve' :
 		if (
 			! $csrf
@@ -159,10 +155,10 @@ if ( isset( $_GET['code'] ) ) {
 			$post
 		);
 
-		template( 'response', compact( 'response' ) );
+		template( [ 'response' => compact( 'response' ) ] );
 	default :
 		die( 'Huh?' );
 	}
 }
 
-template( [ 'form', 'warning' ], compact( 'fields', 'csrf' ) );
+template( [ 'form' => compact( 'fields', 'csrf' ), 'warning' => null ] );
