@@ -2,7 +2,7 @@
 
 require( dirname( __DIR__ ) . '/functions.php' );
 
-headers();
+headers( $script_nonce );
 
 $grant_types = [
 	'authorization_code' => 'Authorization Code',
@@ -207,26 +207,36 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 	exit;
 }
 
-if ( isset( $_GET['code'] ) ) {
-	$action = isset( $_GET['action'] ) ? $_GET['action'] : 'receive';
-
-	switch ( $action ) {
+if ( isset( $_GET['action'] ) ) {
+	switch ( $_GET['action'] ) {
 	case 'receive' :
-		// We can't just retrieve the token in one step.
-		// The redirect from authorization_url to here
-		// means Chrome (and others?) won't send our SameSite=Strict
-		// cookies during this request (I think this is a bug).
-		// Instead, Refresh/meta-refresh to another URL on our
-		// site. The cookies will be sent on that next request.
+		// grant_type=authorization_code
+		if ( isset( $_GET['code'] ) ) {
+			// We can't just retrieve the token in one step.
+			// The redirect from authorization_url to here
+			// means Chrome (and others?) won't send our SameSite=Strict
+			// cookies during this request (I think this is a bug).
+			// Instead, Refresh/meta-refresh to another URL on our
+			// site. The cookies will be sent on that next request.
 
-		$retrieve_url = str_replace( '?action=receive', '?action=retrieve', $_SERVER['REQUEST_URI'] );
-		if ( false === strpos( $retrieve_url, 'action=retrieve' ) ) {
-			$retrieve_url .= '&action=retrieve';
+			$retrieve_url = str_replace( '?action=receive', '?action=retrieve', $_SERVER['REQUEST_URI'] );
+			if ( false === strpos( $retrieve_url, 'action=retrieve' ) ) {
+				$retrieve_url .= '&action=retrieve';
+			}
+
+			template( 'loading', [], $retrieve_url );
+			exit;
 		}
 
-		template( 'loading', [], $retrieve_url );
+		// grant_type=implicit
+
+		template( 'response', compact( 'script_nonce' ) );
 		exit;
 	case 'retrieve' :
+		if ( !isset( $_GET['code'] ) ) {
+			die( 'Missing code' );
+		}
+
 		if (
 			! $csrf
 		||
