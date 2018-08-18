@@ -287,33 +287,32 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 if ( isset( $_GET['action'] ) ) {
 	switch ( $_GET['action'] ) {
 	case 'receive' :
-		// grant_type=authorization_code
-		if ( isset( $_GET['code'] ) ) {
-			// We can't just retrieve the token in one step.
-			// The redirect from authorization_url to here
-			// means Chrome (and others?) won't send our SameSite=Strict
-			// cookies during this request (I think this is a bug).
-			// Instead, Refresh/meta-refresh to another URL on our
-			// site. The cookies will be sent on that next request.
+		// We can't just retrieve the token in one step.
+		// The redirect from authorization_url to here
+		// means Chrome (and others?) won't send our SameSite=Strict
+		// cookies during this request (I think this is a bug).
+		// Instead, Refresh/meta-refresh to another URL on our
+		// site. The cookies will be sent on that next request.
 
-			$retrieve_url = str_replace( '?action=receive', '?action=retrieve', $_SERVER['REQUEST_URI'] );
-			if ( false === strpos( $retrieve_url, 'action=retrieve' ) ) {
-				$retrieve_url .= '&action=retrieve';
-			}
-
-			template( 'loading', [], $retrieve_url );
-			exit;
+		$retrieve_url = str_replace( '?action=receive', '?action=retrieve', $_SERVER['REQUEST_URI'] );
+		if ( false === strpos( $retrieve_url, 'action=retrieve' ) ) {
+			$retrieve_url .= '&action=retrieve';
 		}
 
 		// grant_type=implicit
-
-		template( 'response', compact( 'script_nonce' ) );
-		exit;
-	case 'retrieve' :
-		if ( !isset( $_GET['code'] ) ) {
-			die( 'Missing code' );
+		if ( ! isset( $_GET['code'] ) ) {
+			// Need cookies for client credentials (to verify state).
+			// Have to do the redirect in JS to keep the #fragment
+			template( 'response', compact( 'script_nonce', 'retrieve_url' ) );
+			exit;
 		}
 
+		// grant_type=authorization_code
+		// Need cookies for token_url, client credentials.
+		template( 'loading', [], $retrieve_url );
+		exit;
+
+	case 'retrieve' :
 		if (
 			! $csrf
 		||
@@ -327,6 +326,13 @@ if ( isset( $_GET['action'] ) ) {
 			die( 'STATE MISMATCH!' );
 		}
 
+		// grant_type=implicit
+		if ( ! isset( $_GET['code'] ) ) {
+			template( 'response', compact( 'script_nonce' ) );
+			exit;
+		}
+
+		// grant_type=authorization_code
 		$token_url = $_COOKIE['oauth2_token_url'];
 
 		$basic = base64_encode( rawurlencode( $_COOKIE['oauth2_client_id'] ) . ':' . rawurlencode( $_COOKIE['oauth2_client_secret'] ) );

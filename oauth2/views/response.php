@@ -24,10 +24,37 @@ if ( ! isset( $script_nonce ) ) {
 
 ?>
 <script nonce="<?php echo esc_html( $script_nonce ); ?>">
-	function receiveImplicit() {
+	function getTokenData() {
 		const responseQuery = new URLSearchParams( document.location.hash.slice( 1 ) );
-		const responseObject = [...responseQuery.entries()].reduce( ( formatted, [ key, value ] ) => ({...formatted, [key]: value}), {} );
-		const formatted = JSON.stringify( responseObject, null, '    ' )
+		return [...responseQuery.entries()].reduce( ( formatted, [ key, value ] ) => ({...formatted, [key]: value}), {} );
+	}
+</script>
+<?php
+
+if ( $retrieve_url ) :
+	// Since we have to redirect to the retrieve URL anyway,
+	// we may as well pass along `state` so we can verify it server-side
+?>
+<script nonce="<?php echo esc_html( $script_nonce ); ?>">
+(function() {
+	const retrieveURL = JSON.parse( decodeURIComponent( '<?php echo rawurlencode( json_encode( $retrieve_url ) ); ?>' ) );
+	const tokenData = getTokenData();
+	document.location = retrieveURL + '&state=' + encodeURIComponent( tokenData.state ) + document.location.hash;
+})();
+</script>
+<?php
+
+exit;
+endif;
+
+?>
+<script nonce="<?php echo esc_html( $script_nonce ); ?>">
+(function() {
+	function receiveImplicit() {
+		const tokenData = getTokenData();
+		delete tokenData.state;
+
+		const formatted = JSON.stringify( tokenData, null, '    ' )
 		const contents = document.createDocumentFragment();
 
 		formatted.split( '\n' ).reduce( ( contents, line, i ) => {
@@ -50,4 +77,5 @@ if ( ! isset( $script_nonce ) ) {
 	}
 
 	clearURL();
+})();
 </script>
