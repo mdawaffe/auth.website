@@ -328,7 +328,7 @@ if ( isset( $_GET['action'] ) ) {
 
 		$token_url = $_COOKIE['oauth2_token_url'];
 
-		$basic = base64_encode( rawurlencode( $_POST['client_id'] ) . ':' . rawurlencode( $_POST['client_secret'] ) );
+		$basic = base64_encode( rawurlencode( $_COOKIE['oauth2_client_id'] ) . ':' . rawurlencode( $_COOKIE['oauth2_client_secret'] ) );
 
 		$response = post_to_url(
 			$token_url,
