@@ -79,6 +79,16 @@ input[type="submit"] {
 	outline: none;
 }
 
+input[name="clear"] {
+	justify-self: start;
+	padding-left: 1em;
+	padding-right: 1em;
+	grid-column-start: 2;
+	grid-column-end: 3;
+	background-color: #d54e21;
+	border: 4px #f0821e outset;
+}
+
 input[type="submit"]:active {
 	border-style: inset;
 }

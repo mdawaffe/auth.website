@@ -128,6 +128,15 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 		die( 'CSRF MISMATCH!' );
 	}
 
+	if ( isset( $_POST['clear'] ) ) {
+		foreach ( array_keys( $_COOKIE ) as $cookie_name ) {
+			clear_cookie( $cookie_name );
+		}
+
+		template( 'loading', [], my_url() );
+		exit;
+	}
+
 	// Don't support foo[]=bar&foo[]=lol in extra.
 	// http_build_query() (when constructing the authorization URL)
 	// won't put them back together correctly anyway.

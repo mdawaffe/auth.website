@@ -52,6 +52,7 @@ foreach ( $grant_type_fields as $grant_type => $fields ) :
 ?>
 		<li>
 			<input type="hidden" name="csrf" value="<?php echo esc_html( $csrf ); ?>" />
+			<input type="submit" form="clear" name="clear" value="Clear" />
 			<input type="submit" />
 		</li>
 	</ul>
@@ -62,6 +63,10 @@ foreach ( $grant_type_fields as $grant_type => $fields ) :
 endforeach;
 
 ?>
+
+<form id="clear" action="" method="post">
+	<input type="hidden" name="csrf" value="<?php echo esc_html( $csrf ); ?>" />
+</form>
 
 <script nonce="<?php echo esc_html( $script_nonce ); ?>">
 (function(){
