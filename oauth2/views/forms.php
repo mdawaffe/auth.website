@@ -1,5 +1,9 @@
 <?php
 
+$current_form = isset( $_COOKIE['oauth2_grant_type'] ) && array_key_exists( $_COOKIE['oauth2_grant_type'], $grant_type_fields )
+	? $_COOKIE['oauth2_grant_type']
+	: array_keys( $grant_type_fields )[0];
+
 function select( array $grant_types, string $the_grant_type ) {
 ?>
 	<select id="grant_type-<?php echo esc_html( $the_grant_type ); ?>" name="grant_type">
@@ -14,7 +18,7 @@ function select( array $grant_types, string $the_grant_type ) {
 }
 
 foreach ( $grant_type_fields as $grant_type => $fields ) :
-	$active = $grant_type === $_COOKIE['oauth2_grant_type'] ? 'active' : '';
+	$active = $grant_type === $current_form ? 'active' : '';
 ?>
 <form class="<?php echo $active; ?>" id="<?php echo esc_html( $grant_type ); ?>" action="" method="post">
 	<ul>
