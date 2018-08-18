@@ -31,7 +31,7 @@ if ( ! isset( $script_nonce ) ) {
 </script>
 <?php
 
-if ( $retrieve_url ) :
+if ( isset( $retrieve_url ) && $retrieve_url ) :
 	// Since we have to redirect to the retrieve URL anyway,
 	// we may as well pass along `state` so we can verify it server-side
 ?>
