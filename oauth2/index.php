@@ -51,6 +51,7 @@ $grant_type_fields = [
 		'client_secret'     => 'Client Secret',
 		'refresh_token'     => 'Refresh Token',
 		'scope'             => 'Scope',
+		'extra'             => 'Extra',
 	],
 ];
 
