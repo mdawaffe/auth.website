@@ -7,7 +7,7 @@ function headers( string &$script_nonce = null ) {
 	header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 	header( 'Cache-Control: no-cache, must-revalidate, max-age=0' );
 	header( 'Pragma: no-cache' );
-	header( "Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'self'; script-src 'nonce-$script_nonce'; sandbox allow-forms allow-scripts; form-action 'self'; frame-ancestors 'none';" );
+	header( "Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'self'; script-src 'nonce-$script_nonce'; sandbox allow-forms allow-scripts; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; upgrade-insecure-requests;" );
 	header( 'X-Robots-Tag: noindex, nofollow' );
 	header( 'X-Frame-Options: DENY' );
 }
