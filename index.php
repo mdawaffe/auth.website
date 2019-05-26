@@ -1,6 +1,6 @@
 <?php
 
-header( "Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'self'; sandbox allow-forms; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; upgrade-insecure-requests;" );
+header( "Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'self'; sandbox allow-same-origin allow-forms; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; upgrade-insecure-requests;" );
 header( 'X-Frame-Options: DENY' );
 
 require __DIR__ . '/functions.php';
