@@ -1,5 +1,32 @@
 <?php
 
+// define( 'AUTH_DOT_WEBSITE_IS_HTTPS', true );
+// define( 'AUTH_DOT_WEBSITE_NO_UPGRADE_INSECURE_REQUESTS', true );
+
+function csp_header( string $type = 'full', string &$script_nonce = null ) {
+	$parts = [
+		"default-src 'none'",
+		"img-src 'self'",
+		"style-src 'self'",
+		'full' === $type ? 'sandbox allow-same-origin allow-forms allow-scripts' : 'sandbox allow-same-origin allow-forms',
+		"form-action 'self'",
+		"frame-ancestors 'none'",
+		"base-uri 'self",
+	];
+
+	if ( 'full' === $type ) {
+		$script_nonce = base64_encode( random_bytes( 32 ) );
+		$parts[] = "script-src 'nonce-$script_nonce'";
+	}
+
+	if ( is_https() && ( ! defined( 'AUTH_DOT_WEBSITE_NO_UPGRADE_INSECURE_REQUESTS' ) || AUTH_DOT_WEBSITE_NO_UPGRADE_INSECURE_REQUESTS ) ) {
+		$parts[] = 'upgrade-insecure-requests';
+	}
+
+	header( sprintf( 'Content-Security-Policy: %s;', join( '; ', $parts ) ) );
+	header( 'X-Frame-Options: DENY' );
+}
+
 function headers( string &$script_nonce = null ) {
 	$script_nonce = base64_encode( random_bytes( 32 ) );
 
@@ -7,16 +34,15 @@ function headers( string &$script_nonce = null ) {
 	header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
 	header( 'Cache-Control: no-cache, must-revalidate, max-age=0' );
 	header( 'Pragma: no-cache' );
-	header( "Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'self'; script-src 'nonce-$script_nonce'; sandbox allow-same-origin allow-forms allow-scripts; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; upgrade-insecure-requests;" );
+	csp_header( 'full', $script_nonce );
 	header( 'X-Robots-Tag: noindex, nofollow' );
-	header( 'X-Frame-Options: DENY' );
 }
 
 function is_https() {
 	return
 		( defined( 'AUTH_DOT_WEBSITE_IS_HTTPS' ) && AUTH_DOT_WEBSITE_IS_HTTPS )
 	||
-		'https' === $_SERVER['REQUEST_SCHEME']
+		'https' === ( $_SERVER['REQUEST_SCHEME'] ?? '' )
 	||
 		( ! empty( $_SERVER['HTTPS'] ) && 'off' !== $_SERVER['HTTPS'] )
 	||
