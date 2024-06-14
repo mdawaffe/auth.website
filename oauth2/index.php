@@ -6,6 +6,7 @@ headers( $script_nonce );
 
 $grant_types = [
 	'authorization_code' => 'Authorization Code',
+	'authorization_code_pkce' => 'Authorization Code with PKCE',
 	'password' => 'Password',
 	'implicit' => 'Implicit',
 	'client_credentials' => 'Client Credentials',
@@ -20,6 +21,17 @@ $grant_type_fields = [
 		'client_id'         => 'Client ID',
 		'client_secret'     => 'Client Secret',
 		'scope'             => 'Scope',
+		'extra'             => 'Extra',
+	],
+	'authorization_code_pkce' => [
+		'authorization_url' => 'Authorization URL',
+		'token_url'         => 'Token URL',
+		'redirect_uri'      => 'Client Redirect URI',
+		'client_id'         => 'Client ID',
+		'client_secret'     => 'Client Secret',
+		'scope'             => 'Scope',
+		'pkce_method'       => [ 'PKCE Method', 'plain', 'S256' ],
+		'pkce_verifier'     => 'PKCE Verifier',
 		'extra'             => 'Extra',
 	],
 	'password' => [
@@ -58,7 +70,7 @@ $grant_type_fields = [
 if ( isset( $_COOKIE['csrf'] ) ) {
 	$csrf = $_COOKIE['csrf'];
 } elseif ( empty( $_GET ) ) {
-	$csrf = strtr( base64_encode( random_bytes( 12 ) ), '+/', '-_' );
+	$csrf = base64_url_encode( random_bytes( 12 ) );
 	set_cookie( 'csrf', $csrf );
 } else {
 	$csrf = '';
@@ -67,7 +79,7 @@ if ( isset( $_COOKIE['csrf'] ) ) {
 if ( isset( $_COOKIE['hmac'] ) ) {
 	$hmac_key = $_COOKIE['hmac'];
 } elseif ( empty( $_GET ) ) {
-	$hmac_key = strtr( base64_encode( random_bytes( 12 ) ), '+/', '-_' );
+	$hmac_key = base64_url_encode( random_bytes( 12 ) );
 	set_cookie( 'hmac', $hmac_key );
 } else {
 	$hmac_key = '';
@@ -151,6 +163,10 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 	}
 	set_cookie( 'oauth2_grant_type', $grant_type );
 
+	if ( isset( $_POST['pkce_verifier'] ) && '' === $_POST['pkce_verifier'] ) {
+		$_POST['pkce_verifier'] = base64_url_encode( random_bytes( 32 ) );
+	}
+
 	foreach ( $grant_type_fields[$grant_type] as $field_name => $_ ) {
 		if ( false !== strpos( $field_name, 'url' ) ) {
 			if ( 0 !== strpos( $_POST[$field_name], 'https://' ) ) {
@@ -174,6 +190,21 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 			'client_id' => $_POST['client_id'],
 			'scope' => $_POST['scope'],
 			'state' => $state,
+		];
+		break;
+
+	case 'authorization_code_pkce' :
+		$url = $_POST['authorization_url'];
+		$code_challenge = 'plain' === $_POST['pkce_method'] ? $_POST['pkce_verifier'] : base64_url_encode( hash( 'sha256', $_POST['pkce_verifier'], true ) );
+
+		$parameters = [
+			'redirect_uri' => $redirect_uri,
+			'response_type' => 'code',
+			'client_id' => $_POST['client_id'],
+			'scope' => $_POST['scope'],
+			'state' => '_' . $state,
+			'code_challenge' => $pkce_verifier,
+			'code_challenge_method' => $_POST['pkce_method'],
 		];
 		break;
 
@@ -313,6 +344,11 @@ if ( isset( $_GET['action'] ) ) {
 		exit;
 
 	case 'retrieve' :
+		$state = $_GET['state'];
+		$is_pkce = '_' === $state[0];
+		if ( $is_pkce ) {
+			$state = substr( $state, 1 );
+		}
 		if (
 			! $csrf
 		||
@@ -320,7 +356,7 @@ if ( isset( $_GET['action'] ) ) {
 		||
 			! hash_equals(
 				hmac( "$csrf|{$_COOKIE['oauth2_client_id']}", $hmac_key ),
-				$_GET['state']
+				$state
 			)
 		) {
 			die( 'STATE MISMATCH!' );
@@ -337,15 +373,21 @@ if ( isset( $_GET['action'] ) ) {
 
 		$basic = base64_encode( rawurlencode( $_COOKIE['oauth2_client_id'] ) . ':' . rawurlencode( $_COOKIE['oauth2_client_secret'] ) );
 
+		$post_data = [
+			'client_id' => $_COOKIE['oauth2_client_id'],
+			'client_secret' => $_COOKIE['oauth2_client_secret'],
+			'grant_type' => 'authorization_code',
+			'code' => $_GET['code'],
+			'redirect_uri' => $redirect_uri,
+		];
+
+		if ( $is_pkce ) {
+			$post_data['code_verifier'] = $_COOKIE['pkce_verifier'];
+		}
+
 		$response = post_to_url(
 			$token_url,
-			[
-				'client_id' => $_COOKIE['oauth2_client_id'],
-				'client_secret' => $_COOKIE['oauth2_client_secret'],
-				'grant_type' => 'authorization_code',
-				'code' => $_GET['code'],
-				'redirect_uri' => $redirect_uri,
-			],
+			$post_data,
 			[ "Authorization: Basic $basic" ]
 		);
 

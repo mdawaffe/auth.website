@@ -4,14 +4,14 @@ $current_form = isset( $_COOKIE['oauth2_grant_type'] ) && array_key_exists( $_CO
 	? $_COOKIE['oauth2_grant_type']
 	: array_keys( $grant_type_fields )[0];
 
-function select( array $grant_types, string $the_grant_type ) {
+function select( array $options, string $value, string $name, string $grant_type ) {
 ?>
-	<select id="grant_type-<?php echo esc_html( $the_grant_type ); ?>" name="grant_type">
+	<select id="<?php echo esc_html( $id ); ?>-<?php echo esc_html( $grant_type ); ?>" name="<?php echo esc_html( $name ); ?>">
 <?php
-	foreach ( $grant_types as $grant_type => $grant_type_label ) :
-		$selected = $grant_type === $the_grant_type ? 'selected="selected"' : ''
+	foreach ( $options as $key => $label ) :
+		$selected = $value === $key ? 'selected="selected"' : ''
 ?>
-		<option <?php echo $selected; ?> value="<?php echo esc_html( $grant_type ); ?>"><?php echo esc_html( $grant_type_label ); ?></option>
+		<option <?php echo $selected; ?> value="<?php echo esc_html( $key ); ?>"><?php echo esc_html( $label ); ?></option>
 	<?php endforeach; ?>
 	</select>
 <?php
@@ -24,7 +24,7 @@ foreach ( $grant_type_fields as $grant_type => $fields ) :
 	<ul>
 		<li>
 			<label for="grant_type-<?php echo esc_html( $grant_type ); ?>">Grant Type</label>
-			<?php select( $grant_types, $grant_type ); ?>
+			<?php select( $grant_types, $grant_type, 'grant_type', $grant_type ); ?>
 		</li>
 <?php
 	foreach ( $fields as $field_name => $field_label ) :
@@ -36,16 +36,27 @@ foreach ( $grant_type_fields as $grant_type => $fields ) :
 			$disabled = '';
 			$value = isset( $_COOKIE['oauth2_' . $field_name] ) ? $_COOKIE['oauth2_' . $field_name] : '';
 		}
+
+		if ( is_array( $field_label ) ) {
+			$field_options = $field_label;
+			$field_label = array_shift( $field_options );
+		} else {
+			$field_options = null;
+		}
 ?>
 		<li>
-			<label for="<?php echo esc_html( $field_name ); ?>"><?php echo esc_html( $field_label ); ?></label>
-			<input
-				type="text" id="<?php echo esc_html( $field_name ); ?>"
-				<?php echo $disabled; ?>
-				name="<?php echo esc_html( $field_name ); ?>"
-				value="<?php echo esc_html( $value ); ?>"
-				placeholder="<?php echo esc_html( $placeholder ); ?>"
-			/>
+			<label for="<?php echo esc_html( $field_name ); ?>-<?php echo esc_html( $grant_type ); ?>"><?php echo esc_html( $field_label ); ?></label>
+			<?php if ( is_array( $field_options ) ) : ?>
+				<?php select( array_combine( $field_options, $field_options ), $value ?: 'S256', $field_name, $grant_type ); ?>
+			<?php else : ?>
+				<input
+					type="text" id="<?php echo esc_html( $field_name ); ?>"
+					<?php echo $disabled; ?>
+					name="<?php echo esc_html( $field_name ); ?>"
+					value="<?php echo esc_html( $value ); ?>"
+					placeholder="<?php echo esc_html( $placeholder ); ?>"
+				/>
+			<?php endif; ?>
 		</li>
 <?php
 	endforeach;

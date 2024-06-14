@@ -11,7 +11,7 @@ function csp_header( string $type = 'full', string &$script_nonce = null ) {
 		'full' === $type ? 'sandbox allow-same-origin allow-forms allow-scripts' : 'sandbox allow-same-origin allow-forms',
 		"form-action 'self'",
 		"frame-ancestors 'none'",
-		"base-uri 'self",
+		"base-uri 'self'",
 	];
 
 	if ( 'full' === $type ) {
@@ -241,4 +241,8 @@ function wp_http_validate_url( $url ) {
 	}
 
 	return preg_replace( sprintf( '#^https://%s(:|/|$)#', preg_quote( $host, '#' ) ), "https://$ip\\1", $url );
+}
+
+function base64_url_encode( $data ) {
+	return strtr( base64_encode( $data ), [ '+' => '-', '/' => '_', '=' => '' ] );
 }
