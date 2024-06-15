@@ -6,7 +6,7 @@ $current_form = isset( $_COOKIE['oauth2_grant_type'] ) && array_key_exists( $_CO
 
 function select( array $options, string $value, string $name, string $grant_type ) {
 ?>
-	<select id="<?php echo esc_html( $id ); ?>-<?php echo esc_html( $grant_type ); ?>" name="<?php echo esc_html( $name ); ?>">
+	<select id="<?php echo esc_html( $name ); ?>-<?php echo esc_html( $grant_type ); ?>" name="<?php echo esc_html( $name ); ?>">
 <?php
 	foreach ( $options as $key => $label ) :
 		$selected = $value === $key ? 'selected="selected"' : ''
