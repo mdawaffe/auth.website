@@ -203,7 +203,7 @@ if ( 'POST' === strtoupper( $_SERVER['REQUEST_METHOD'] ) ) {
 			'client_id' => $_POST['client_id'],
 			'scope' => $_POST['scope'],
 			'state' => '_' . $state,
-			'code_challenge' => $pkce_verifier,
+			'code_challenge' => $code_challenge,
 			'code_challenge_method' => $_POST['pkce_method'],
 		];
 		break;
@@ -382,7 +382,7 @@ if ( isset( $_GET['action'] ) ) {
 		];
 
 		if ( $is_pkce ) {
-			$post_data['code_verifier'] = $_COOKIE['pkce_verifier'];
+			$post_data['code_verifier'] = $_COOKIE['oauth2_pkce_verifier'];
 		}
 
 		$response = post_to_url(
