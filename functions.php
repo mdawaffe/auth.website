@@ -202,10 +202,10 @@ function wp_http_validate_url( $url ) {
 		return false;
 	}
 
-	$ip_regex = '#^(([1-9]?\d|1\d\d|25[0-5]|2[0-4]\d)\.){3}([1-9]?\d|1\d\d|25[0-5]|2[0-4]\d)$#';
+	$ip_regex = '#^(?:(?:[1-9]?\d|1\d\d|25[0-5]|2[0-4]\d)\.){3}(?:[1-9]?\d|1\d\d|25[0-5]|2[0-4]\d)(?=(?::\d{2,4})?$)#';
 
-	if ( preg_match( $ip_regex, $host ) ) {
-		$ips = [ $host ];
+	if ( preg_match( $ip_regex, $host, $host_match ) ) {
+		$ips = $ip_match;
 	} else {
 		$ips = gethostbynamel( $host );
 	}
@@ -214,8 +214,8 @@ function wp_http_validate_url( $url ) {
 		return false;
 	}
 
-	if ( preg_match( $ip_regex, $_SERVER['HTTP_HOST'] ) ) {
-		$my_ips = [ $_SERVER['HTTP_HOST'] ];
+	if ( preg_match( $ip_regex, $_SERVER['HTTP_HOST'], $my_host_match ) ) {
+		$my_ips = $my_host_match;
 	} else {
 		$my_ips = gethostbynamel( $_SERVER['HTTP_HOST'] );
 	}
